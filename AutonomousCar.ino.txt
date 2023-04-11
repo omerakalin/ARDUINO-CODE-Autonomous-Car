@@ -1,0 +1,57 @@
+#include <Servo.h>
+
+Servo steeringServo;
+
+int trigPin = 7; // ultrasonic sensor trigger pin
+int echoPin = 8; // ultrasonic sensor echo pin
+int leftSpeedPin = 9; // left motor speed control pin
+int leftDirPin = 11; // left motor direction pin
+int rightSpeedPin = 10; // right motor speed control pin
+int rightDirPin = 12; // right motor direction pin
+
+void setup() {
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(leftSpeedPin, OUTPUT);
+  pinMode(leftDirPin, OUTPUT);
+  pinMode(rightSpeedPin, OUTPUT);
+  pinMode(rightDirPin, OUTPUT);
+
+  steeringServo.attach(5); // attach steering servo to pin 5
+}
+
+void loop() {
+  float duration, distance;
+  digitalWrite(trigPin, LOW); // set trigger pin low
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH); // set trigger pin high
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW); // set trigger pin low
+  duration = pulseIn(echoPin, HIGH); // measure the time it takes for the sound to bounce back
+  distance = (duration/2) / 29.1; // calculate distance in cm
+
+  if (distance > 10) { // if there is no obstacle within 10cm
+    digitalWrite(leftDirPin, HIGH);
+    digitalWrite(rightDirPin, HIGH);
+    analogWrite(leftSpeedPin, 150); // set left motor speed to 150
+    analogWrite(rightSpeedPin, 150); // set right motor speed to 150
+  } else { // if there is an obstacle within 10cm
+    digitalWrite(leftDirPin, LOW);
+    digitalWrite(rightDirPin, HIGH);
+    analogWrite(leftSpeedPin, 0); // stop left motor
+    analogWrite(rightSpeedPin, 150); // set right motor speed to 150
+    steeringServo.write(90); // center the steering
+    delay(1000);
+    digitalWrite(leftDirPin, HIGH);
+    digitalWrite(rightDirPin, HIGH);
+    analogWrite(leftSpeedPin, 150); // set left motor speed to 150
+    analogWrite(rightSpeedPin, 150); // set right motor speed to 150
+    delay(1000);
+    steeringServo.write(0); // turn the steering left
+    delay(1000);
+    digitalWrite(leftDirPin, HIGH);
+    digitalWrite(rightDirPin, HIGH);
+    analogWrite(leftSpeedPin, 150); // set left motor speed to 150
+    analogWrite(rightSpeedPin, 150); // set right motor speed to 150
+  }
+}
